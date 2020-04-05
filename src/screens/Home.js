@@ -5,8 +5,8 @@ import { Header, Configs, Drawer } from '../components/index';
 
 export default function Home() {
 
-  const [rows, setRows] = useState(32);
-  const [columns, setColumns] = useState(32);
+  const [rows, setRows] = useState(16);
+  const [columns, setColumns] = useState(16);
 
   const handleRowsChange = value => setRows(value);
   const handleColumnsChange = value => setColumns(value);
