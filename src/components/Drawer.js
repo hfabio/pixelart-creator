@@ -3,12 +3,13 @@ import styled from 'styled-components';
 import ColorPicker from './ColorPicker';
 
 export default function Drawer({ rows: storedRows, columns: storedColumns }) {
+  const default_color = 'rgba(255, 255, 255, 1)';
 
   const [rows, setRows] = useState(storedRows || 32);
   const [columns, setColumns] = useState(storedColumns || 32);
-  const [color, setColor] = useState('rgba(255, 255, 255, 1)');
-  const [colors, setColors] = useState(['rgba(255, 255, 255, 1)']);
-  const [selectedColor, setSelectedColor] = useState('rgba(255, 255, 255, 1)');
+  const [color, setColor] = useState(default_color);
+  const [colors, setColors] = useState([default_color]);
+  const [selectedColor, setSelectedColor] = useState(default_color);
 
   useEffect(() => {
     setRows(storedRows);
@@ -29,7 +30,33 @@ export default function Drawer({ rows: storedRows, columns: storedColumns }) {
     }
     setSelectedColor(color);
   }
-  const removeColor = color => setColors(colors.filter(element => element !== color));
+
+  const removeColor = color => {
+    setColors(colors.filter(element => element !== color));
+    reindexColorReferences(color);
+  };
+
+  const reindexColorReferences = color => {
+    const index = colors.findIndex(element => element === color);
+    const new_colors = colors.filter(element => element !== color);
+    // cleaning
+    let cells = Array.from(document.querySelectorAll('td')).filter(element => element.attributes['data-class'].value === `pixel-color-${index}`);
+    for (const cell of cells) {
+      cell.style.backgroundColor = 'rgba(255,255,255,0)';
+      cell.style.border = '1px solid rgba(0,0,0,1)';
+      cell.setAttribute('data-class', `invisible`);
+    }
+    // now reindexing
+    cells = Array.from(document.querySelectorAll('td')).filter(element => (element.attributes['data-class'].value !== `pixel-color-${index}`) && element.attributes['data-class'].value !== `invisible`);
+    for (const cell of cells) {
+      if (cell.style.backgroundColor.includes('rgba')) {
+        cell.setAttribute('data-class', `pixel-color-${new_colors.findIndex(element => element === cell.style.backgroundColor)}`);
+      } else {
+        let fixed_color = cell.style.backgroundColor.replace('rgb', 'rgba').replace(')', ', 1)');
+        cell.setAttribute('data-class', `pixel-color-${new_colors.findIndex(element => element === fixed_color)}`);
+      }
+    }
+  }
 
 
   const paintMe = evt => {
