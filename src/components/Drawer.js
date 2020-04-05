@@ -36,6 +36,8 @@ export default function Drawer({ rows: storedRows, columns: storedColumns }) {
     reindexColorReferences(color);
   };
 
+  const fixRgbForRgba = color => color.replace('rgb', 'rgba').replace(')', ', 1)');
+
   const reindexColorReferences = color => {
     const index = colors.findIndex(element => element === color);
     const new_colors = colors.filter(element => element !== color);
@@ -52,7 +54,7 @@ export default function Drawer({ rows: storedRows, columns: storedColumns }) {
       if (cell.style.backgroundColor.includes('rgba')) {
         cell.setAttribute('data-class', `pixel-color-${new_colors.findIndex(element => element === cell.style.backgroundColor)}`);
       } else {
-        let fixed_color = cell.style.backgroundColor.replace('rgb', 'rgba').replace(')', ', 1)');
+        let fixed_color = fixRgbForRgba(cell.style.backgroundColor);
         cell.setAttribute('data-class', `pixel-color-${new_colors.findIndex(element => element === fixed_color)}`);
       }
     }
@@ -86,10 +88,35 @@ export default function Drawer({ rows: storedRows, columns: storedColumns }) {
     return Array.from(document.querySelectorAll('table tr')).map(element => Array.from(element.children)).map(el => el.map(element => element.attributes['data-class'].value));
   }
 
+  const getClassesIndexes = () => {
+    const rows = getValues();
+    const result = {};
+    for (const value of colors) {
+      const index = colors.findIndex(element => element === value);
+      result[`pixel-color-${index}`] = [];
+    }
+    result['invisible'] = [];
+
+    let cont = 1;
+    for (const row of rows) {
+      for (const cell of row) {
+        result[cell].push(cont);
+        cont++;
+      }
+    }
+    for (const index of Object.keys(result)) {
+      if (result[index].length === 0) {
+        delete result[index];
+      }
+    }
+    console.log(result);
+    return result;
+  }
+
   return (
     <Screen>
       <div>
-        <h1>Selected color: <SelectedColorSquare selectedColor={selectedColor} rows={rows} columns={columns} /></h1>
+        <h1>Selected color: <SelectedColorSquare selectedColor={selectedColor} rows={rows} columns={columns} onClick={getClassesIndexes} /></h1>
         <Paper rows={rows} columns={columns} backgroundColor={color}>
           {Array(rows).fill(
             Array(columns).fill(<td style={{ backgroundColor: 'rgba(255, 255, 255, 0)', border: '1px solid rgba(0,0,0,1)' }} data-class="invisible" onMouseDown={(evt) => paintMe(evt)} onContextMenuCapture={(evt) => clearMe(evt)} onMouseOver={(evt) => overMe(evt)}></td>)
@@ -130,7 +157,7 @@ const Screen = styled.div`
 `;
 
 const Paper = styled.table`
-background-color: #fff;
+background-color: rgba(207, 207, 207, 0.3);
 margin: 0;
 padding: 0;
   box-sizing: border-box;
