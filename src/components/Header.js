@@ -29,11 +29,10 @@ const Nav = styled.nav`
   background: rgb(2,0,36);
   background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(255,0,121,1) 100%);
 
-  a{
+  a {
     text-decoration: none;
     font-size: 24px;
     line-height: 5vh;
-    font-weight: bold;
     font-family: 'Press Start 2P', cursive;
     cursor: pointer;
     color: #fff;

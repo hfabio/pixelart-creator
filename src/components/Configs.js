@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
-export default function Configs(props) {
-  const [rows, setRows] = useState(props.rows || 28);
-  const [columns, setColumns] = useState(props.columns || 28);
+export default function Configs({ rows: storedRows, columns: storedColumns, rowsChange, columnsChange }) {
+  const [rows, setRows] = useState(storedRows || 28);
+  const [columns, setColumns] = useState(storedColumns || 28);
 
   useEffect(() => {
     console.log(`Alterou o valor das linhas e colunas: ${rows}x${columns}`)
@@ -15,17 +15,29 @@ export default function Configs(props) {
   }
 
   const handleRowsChange = evt => {
+    if (Number(evt.target.value) > 64) {
+      return;
+    }
+
     if (evt.target.value.length !== 0) {
-      setRows(evt.target.value);
+      setRows(Number(evt.target.value));
+      rowsChange(Number(evt.target.value));
     } else {
       setRows(1);
+      rowsChange(1);
     }
   };
   const handleColumnsChange = evt => {
+    if (Number(evt.target.value) > 64) {
+      return;
+    }
+
     if (evt.target.value.length !== 0) {
-      setColumns(evt.target.value);
+      setColumns(Number(evt.target.value));
+      columnsChange(Number(evt.target.value));
     } else {
       setColumns(1);
+      columnsChange(1);
     }
   };
 
@@ -33,9 +45,9 @@ export default function Configs(props) {
     <Board>
       <h1>Please, select number of rows and columns:</h1>
       <label htmlFor="rows">Rows</label>
-      <input name="rows" maxlength="3" onChange={handleRowsChange} value={rows} required></input>
+      <input type="number" name="rows" maxlength="3" min="1" max="64" onChange={handleRowsChange} value={rows} required></input>
       <label htmlFor="columns">columns</label>
-      <input name="columns" maxlength="3" onChange={handleColumnsChange} value={columns} required></input>
+      <input type="number" name="columns" maxlength="3" min="1" max="64" onChange={handleColumnsChange} value={columns} required></input>
       <button onClick={generateFile}>Generate css file</button>
     </Board>
   )
@@ -64,7 +76,11 @@ const Board = styled.div`
   > input {
     font-family: inherit;
     width: 3vw;
+    height: 25px;
+    font-size: 14px;
+    line-height: 25px;
     margin-left: 1vw;
+    text-align: center;
   }
   
   > button {
