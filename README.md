@@ -3,8 +3,8 @@ This is a project for study purpose and to help anothers developers or designers
 
 ## Technologies used:
 - React
-- Redux
-- React Dom (for navigation)
+- Redux -> `not implemented yet`
+- React Dom (for navigation) -> `not implemented yet`
 - Styled components
 - React Color
 
