@@ -7,8 +7,8 @@ export default function Drawer({ rows: storedRows, columns: storedColumns }) {
   const [rows, setRows] = useState(storedRows || 32);
   const [columns, setColumns] = useState(storedColumns || 32);
   const [color, setColor] = useState('rgba(255, 255, 255, 1)');
-  const [colors, setColors] = useState([]);
-  const [selectedColor, setSelectedColor] = useState('');
+  const [colors, setColors] = useState(['rgba(255, 255, 255, 1)']);
+  const [selectedColor, setSelectedColor] = useState('rgba(255, 255, 255, 1)');
 
   useEffect(() => {
     setRows(storedRows);
@@ -32,13 +32,40 @@ export default function Drawer({ rows: storedRows, columns: storedColumns }) {
   const removeColor = color => setColors(colors.filter(element => element !== color));
 
 
+  const paintMe = evt => {
+    evt.preventDefault();
+    evt.target.style.backgroundColor = selectedColor;
+    evt.target.style.border = '1px solid rgba(0,0,0,0.2)';
+    evt.target.setAttribute('data-class', `pixel-color-${colors.findIndex(element => element === selectedColor)}`);
+  }
+  const clearMe = evt => {
+    evt.preventDefault();
+    evt.target.style.backgroundColor = 'rgba(255,255,255,0)';
+    evt.target.style.border = '1px solid rgba(0,0,0,1)';
+    evt.target.setAttribute('data-class', `invisible`);
+  }
+
+  const overMe = evt => {
+    if (evt.buttons === 1) {
+      //painting
+      paintMe(evt);
+    } else if (evt.buttons === 2) {
+      // erasing
+      clearMe(evt);
+    }
+  }
+
+  const getValues = () => {
+    return Array.from(document.querySelectorAll('table tr')).map(element => Array.from(element.children)).map(el => el.map(element => element.attributes['data-class'].value));
+  }
+
   return (
     <Screen>
       <div>
         <h1>Selected color: <SelectedColorSquare selectedColor={selectedColor} rows={rows} columns={columns} /></h1>
         <Paper rows={rows} columns={columns} backgroundColor={color}>
           {Array(rows).fill(
-            Array(columns).fill(<td></td>)
+            Array(columns).fill(<td style={{ backgroundColor: 'rgba(255, 255, 255, 0)', border: '1px solid rgba(0,0,0,1)' }} data-class="invisible" onMouseDown={(evt) => paintMe(evt)} onContextMenuCapture={(evt) => clearMe(evt)} onMouseOver={(evt) => overMe(evt)}></td>)
           ).map(element => <tr>{element}</tr>)}
         </Paper>
       </div>
@@ -100,9 +127,10 @@ padding: 0;
   height: calc(60vh / ${props => Math.max(...[props.rows, props.columns])});
   margin: 0;
   padding: 0;
-    -webkit-box-shadow:inset 0px 0px 0px 1px #000;
+  border: 1px solid #000;
+    /* -webkit-box-shadow:inset 0px 0px 0px 1px #000;
     -moz-box-shadow:inset 0px 0px 0px 1px #000;
-    box-shadow:inset 0px 0px 0px 1px #000;
+    box-shadow:inset 0px 0px 0px 1px #000; */
 }
 `;
 
