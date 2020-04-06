@@ -93,19 +93,19 @@ export default function Drawer({ rows: storedRows, columns: storedColumns }) {
     const result = {};
     for (const value of colors) {
       const index = colors.findIndex(element => element === value);
-      result[`pixel-color-${index}`] = [];
+      result[`pixel-color-${index}`] = { positions: [], color: value };
     }
-    result['invisible'] = [];
+    result['invisible'] = { positions: [], color: 'rgba(255, 255, 255, 0)' };
 
     let cont = 1;
     for (const row of rows) {
       for (const cell of row) {
-        result[cell].push(cont);
+        result[cell].positions.push(cont);
         cont++;
       }
     }
     for (const index of Object.keys(result)) {
-      if (result[index].length === 0) {
+      if (result[index].positions.length === 0) {
         delete result[index];
       }
     }
@@ -113,10 +113,41 @@ export default function Drawer({ rows: storedRows, columns: storedColumns }) {
     return result;
   }
 
+  const createCssString = () => {
+    const indexes = getClassesIndexes();
+    let css = `
+    .pixel-art {
+      width: 60vh;
+      height: 60vh;
+      box-shadow: 1px 14px 93px 2px rgba(0, 0, 0, 0.41);
+      background: #ffffff;
+    }
+    .pixel-art .pixel {
+      width: calc(60vh / ${Math.max(...[rows, columns])});
+      height: calc(60vh / ${Math.max(...[rows, columns])});
+      background: transparent;
+      float: left;
+      font-size: 6px;
+      text-align: center;
+      line-height: 10px;
+      box-shadow: 0px 0px 1px 0px #231816;
+    }
+    `;
+    for (const key of Object.keys(indexes)) {
+      if (key !== 'invisible') {
+        const positions = indexes[key].positions.map(element => `.pixel-art .pixel:nth-of-type(${element})`);
+        css += `${positions.join(', ')}{
+          background-color: ${indexes[key].color};
+        }`;
+      }
+    }
+    console.log(css);
+  }
+
   return (
     <Screen>
       <div>
-        <h1>Selected color: <SelectedColorSquare selectedColor={selectedColor} rows={rows} columns={columns} onClick={getClassesIndexes} /></h1>
+        <h1>Selected color: <SelectedColorSquare selectedColor={selectedColor} rows={rows} columns={columns} onClick={createCssString} /></h1>
         <Paper rows={rows} columns={columns} backgroundColor={color}>
           {Array(rows).fill(
             Array(columns).fill(<td style={{ backgroundColor: 'rgba(255, 255, 255, 0)', border: '1px solid rgba(0,0,0,1)' }} data-class="invisible" onMouseDown={(evt) => paintMe(evt)} onContextMenuCapture={(evt) => clearMe(evt)} onMouseOver={(evt) => overMe(evt)}></td>)
